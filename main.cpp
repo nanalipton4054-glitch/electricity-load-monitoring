@@ -54,9 +54,13 @@ public:
              << setw(15) << hoursPerDay
              << setw(15) << calculateEnergy() << endl;
     }
+
+    string getName() const { return name; }
 };
 
-double calculateTotalEnergy(const vector<Appliance>& appliances) {
+vector<Appliance> appliances;
+
+double calculateTotalEnergy() {
     double total = 0;
     for (const auto& a : appliances) {
         total += a.calculateEnergy();
@@ -64,20 +68,19 @@ double calculateTotalEnergy(const vector<Appliance>& appliances) {
     return total;
 }
 
-int main() {
-    vector<Appliance> appliances;
-    int count;
+void registerAppliance() {
+    Appliance a;
+    a.inputAppliance();
+    appliances.push_back(a);
+    cout << "Appliance registered successfully.\n";
+}
 
-    cout << "How many appliances do you want to register? ";
-    cin >> count;
-
-    for (int i = 0; i < count; i++) {
-        Appliance a;
-        a.inputAppliance();
-        appliances.push_back(a);
+void viewAppliances() {
+    if (appliances.empty()) {
+        cout << "No appliances registered.\n";
+        return;
     }
 
-    cout << "\nRegistered Appliances\n";
     cout << left << setw(20) << "Name"
          << setw(15) << "Power(W)"
          << setw(15) << "Hours"
@@ -86,10 +89,60 @@ int main() {
     for (const auto& a : appliances) {
         a.displayAppliance();
     }
+}
 
-    cout << "\nTotal Energy Consumption: "
-         << calculateTotalEnergy(appliances)
-         << " kWh/day\n";
+void searchAppliance() {
+    cin.ignore();
+    string searchName;
 
+    cout << "Enter appliance name to search: ";
+    getline(cin, searchName);
+
+    for (const auto& a : appliances) {
+        if (a.getName() == searchName) {
+            cout << "\nAppliance Found:\n";
+            a.displayAppliance();
+            return;
+        }
+    }
+
+    cout << "Appliance not found.\n";
+}
+
+void menu() {
+    int choice;
+
+    do {
+        cout << "\nElectrical Load Monitoring\n";
+        cout << "1. Register appliance\n";
+        cout << "2. View all appliances\n";
+        cout << "3. Search appliance\n";
+        cout << "4. Energy summary\n";
+        cout << "0. Exit\n";
+        cout << "Choose: ";
+
+        cin >> choice;
+
+        switch (choice) {
+            case 1: registerAppliance(); break;
+            case 2: viewAppliances(); break;
+            case 3: searchAppliance(); break;
+            case 4:
+                cout << "Total Energy Consumption: "
+                     << calculateTotalEnergy()
+                     << " kWh/day\n";
+                break;
+            case 0:
+                cout << "Exiting program...\n";
+                break;
+            default:
+                cout << "Invalid choice.\n";
+        }
+
+    } while (choice != 0);
+}
+
+int main() {
+    menu();
     return 0;
 }
