@@ -37,12 +37,6 @@ private:
     double hoursPerDay;
 
 public:
-    Appliance() {
-        name = "";
-        powerRating = 0;
-        hoursPerDay = 0;
-    }
-
     void inputAppliance() {
         cin.ignore();
 
@@ -59,6 +53,14 @@ public:
 
         hoursPerDay = getValidatedDouble(
             "Enter usage hours per day (0-24): ", 0, 24);
+    }
+
+    void editAppliance() {
+        powerRating = getValidatedDouble(
+            "Enter new power rating (Watts): ", 0.1, 100000);
+
+        hoursPerDay = getValidatedDouble(
+            "Enter new usage hours per day (0-24): ", 0, 24);
     }
 
     double calculateEnergy() const {
@@ -108,13 +110,11 @@ void loadFromFile() {
 
 void saveToFile() {
     ofstream file("appliances.txt");
-
     for (const auto &a : appliances) {
         file << a.getName() << ","
              << a.getPower() << ","
              << a.getHours() << endl;
     }
-
     file.close();
 }
 
@@ -125,36 +125,30 @@ double calculateTotalEnergy() {
     return total;
 }
 
-void calculateBilling() {
-    if (appliances.empty()) {
-        cout << "No appliances available.\n";
-        return;
-    }
-
-    double tariff = getValidatedDouble(
-        "Enter electricity tariff per kWh: ", 0.01, 100);
-
-    double totalEnergy = calculateTotalEnergy();
-    double totalCost = totalEnergy * tariff;
-
-    cout << fixed << setprecision(2);
-    cout << "\nTotal Energy Consumption: "
-         << totalEnergy << " kWh/day\n";
-    cout << "Total Electricity Cost: "
-         << totalCost << endl;
-
-    ofstream billFile("billing_summary.txt");
-    billFile << "Total Energy: " << totalEnergy << " kWh/day\n";
-    billFile << "Tariff: " << tariff << "\n";
-    billFile << "Total Cost: " << totalCost << endl;
-    billFile.close();
-}
-
 void registerAppliance() {
     Appliance a;
     a.inputAppliance();
     appliances.push_back(a);
     cout << "Appliance registered successfully.\n";
+}
+
+void editAppliance() {
+    cin.ignore();
+    string name;
+
+    cout << "Enter appliance name to edit: ";
+    getline(cin, name);
+
+    for (auto &a : appliances) {
+        if (a.getName() == name) {
+            cout << "Editing appliance...\n";
+            a.editAppliance();
+            cout << "Updated successfully.\n";
+            return;
+        }
+    }
+
+    cout << "Appliance not found.\n";
 }
 
 void viewAppliances() {
@@ -176,38 +170,27 @@ void menu() {
     int choice;
 
     do {
-        cout << "\n=====================================\n";
-        cout << "        Electrical Load Monitoring\n";
-        cout << "=====================================\n";
-
+        cout << "\n=== Electrical Load Monitoring ===\n";
         cout << "1. Register appliance\n";
-        cout << "2. View all appliances\n";
-        cout << "3. Energy summary (kWh/day)\n";
-        cout << "4. Billing summary\n";
+        cout << "2. View appliances\n";
+        cout << "3. Edit appliance\n";
+        cout << "4. Energy summary\n";
         cout << "0. Exit\n";
         cout << "Choose: ";
-
         cin >> choice;
-
-        if (cin.fail()) {
-            cin.clear();
-            cin.ignore(1000, '\n');
-            cout << "Invalid menu choice.\n";
-            continue;
-        }
 
         switch (choice) {
             case 1: registerAppliance(); break;
             case 2: viewAppliances(); break;
-            case 3:
-                cout << "\nTotal Energy Consumption: "
+            case 3: editAppliance(); break;
+            case 4:
+                cout << "Total Energy: "
                      << calculateTotalEnergy()
                      << " kWh/day\n";
                 break;
-            case 4: calculateBilling(); break;
             case 0:
                 saveToFile();
-                cout << "Exiting program...\n";
+                cout << "Exiting...\n";
                 break;
             default:
                 cout << "Invalid choice.\n";
