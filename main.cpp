@@ -6,7 +6,6 @@ using namespace std;
 
 double getValidatedDouble(string message, double min, double max) {
     double value;
-
     while (true) {
         cout << message;
         cin >> value;
@@ -14,7 +13,7 @@ double getValidatedDouble(string message, double min, double max) {
         if (cin.fail()) {
             cin.clear();
             cin.ignore(1000, '\n');
-            cout << "Invalid input. Enter a numeric value.\n";
+            cout << "Invalid input.\n";
             continue;
         }
 
@@ -26,7 +25,6 @@ double getValidatedDouble(string message, double min, double max) {
 
         break;
     }
-
     return value;
 }
 
@@ -39,28 +37,14 @@ private:
 public:
     void inputAppliance() {
         cin.ignore();
-
         cout << "Enter appliance name: ";
         getline(cin, name);
-
-        while (name.empty()) {
-            cout << "Name cannot be empty. Enter again: ";
-            getline(cin, name);
-        }
 
         powerRating = getValidatedDouble(
             "Enter power rating (Watts): ", 0.1, 100000);
 
         hoursPerDay = getValidatedDouble(
             "Enter usage hours per day (0-24): ", 0, 24);
-    }
-
-    void editAppliance() {
-        powerRating = getValidatedDouble(
-            "Enter new power rating (Watts): ", 0.1, 100000);
-
-        hoursPerDay = getValidatedDouble(
-            "Enter new usage hours per day (0-24): ", 0, 24);
     }
 
     double calculateEnergy() const {
@@ -104,8 +88,6 @@ void loadFromFile() {
         appliances.push_back(a);
         file.ignore();
     }
-
-    file.close();
 }
 
 void saveToFile() {
@@ -115,7 +97,6 @@ void saveToFile() {
              << a.getPower() << ","
              << a.getHours() << endl;
     }
-    file.close();
 }
 
 double calculateTotalEnergy() {
@@ -125,30 +106,42 @@ double calculateTotalEnergy() {
     return total;
 }
 
-void registerAppliance() {
-    Appliance a;
-    a.inputAppliance();
-    appliances.push_back(a);
-    cout << "Appliance registered successfully.\n";
-}
-
-void editAppliance() {
+void deleteAppliance() {
     cin.ignore();
     string name;
 
-    cout << "Enter appliance name to edit: ";
+    cout << "Enter appliance name to delete: ";
     getline(cin, name);
 
-    for (auto &a : appliances) {
-        if (a.getName() == name) {
-            cout << "Editing appliance...\n";
-            a.editAppliance();
-            cout << "Updated successfully.\n";
+    for (auto it = appliances.begin();
+         it != appliances.end(); ++it) {
+
+        if (it->getName() == name) {
+            appliances.erase(it);
+            cout << "Appliance deleted successfully.\n";
             return;
         }
     }
 
     cout << "Appliance not found.\n";
+}
+
+void viewReport() {
+    double daily = calculateTotalEnergy();
+    double monthly = daily * 30;
+    double yearly = daily * 365;
+
+    cout << fixed << setprecision(2);
+    cout << "\nEnergy Report\n";
+    cout << "Daily:   " << daily << " kWh\n";
+    cout << "Monthly: " << monthly << " kWh\n";
+    cout << "Yearly:  " << yearly << " kWh\n";
+}
+
+void registerAppliance() {
+    Appliance a;
+    a.inputAppliance();
+    appliances.push_back(a);
 }
 
 void viewAppliances() {
@@ -173,8 +166,8 @@ void menu() {
         cout << "\n=== Electrical Load Monitoring ===\n";
         cout << "1. Register appliance\n";
         cout << "2. View appliances\n";
-        cout << "3. Edit appliance\n";
-        cout << "4. Energy summary\n";
+        cout << "3. Delete appliance\n";
+        cout << "4. Energy report (daily/monthly/yearly)\n";
         cout << "0. Exit\n";
         cout << "Choose: ";
         cin >> choice;
@@ -182,12 +175,8 @@ void menu() {
         switch (choice) {
             case 1: registerAppliance(); break;
             case 2: viewAppliances(); break;
-            case 3: editAppliance(); break;
-            case 4:
-                cout << "Total Energy: "
-                     << calculateTotalEnergy()
-                     << " kWh/day\n";
-                break;
+            case 3: deleteAppliance(); break;
+            case 4: viewReport(); break;
             case 0:
                 saveToFile();
                 cout << "Exiting...\n";
