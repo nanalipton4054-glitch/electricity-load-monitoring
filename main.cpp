@@ -31,14 +31,14 @@ public:
         cout << "Enter power rating (Watts): ";
         cin >> powerRating;
         while (powerRating <= 0) {
-            cout << "Power rating must be greater than 0: ";
+            cout << "Power rating must be greater than 0. Enter again: ";
             cin >> powerRating;
         }
 
         cout << "Enter usage hours per day (0-24): ";
         cin >> hoursPerDay;
         while (hoursPerDay < 0 || hoursPerDay > 24) {
-            cout << "Hours must be between 0 and 24: ";
+            cout << "Hours must be between 0 and 24. Enter again: ";
             cin >> hoursPerDay;
         }
     }
@@ -67,10 +67,35 @@ public:
 
 vector<Appliance> appliances;
 
+void loadFromFile() {
+    ifstream file("appliances.txt");
+
+    if (!file) {
+        return; // File does not exist yet
+    }
+
+    string name;
+    double power, hours;
+
+    while (getline(file, name, ',') &&
+           file >> power &&
+           file.ignore() &&
+           file >> hours) {
+
+        Appliance a;
+        a.setData(name, power, hours);
+        appliances.push_back(a);
+
+        file.ignore(); // Ignore newline
+    }
+
+    file.close();
+}
+
 void saveToFile() {
     ofstream file("appliances.txt");
 
-    for (const auto& a : appliances) {
+    for (const auto &a : appliances) {
         file << a.getName() << ","
              << a.getPower() << ","
              << a.getHours() << endl;
@@ -81,8 +106,9 @@ void saveToFile() {
 
 double calculateTotalEnergy() {
     double total = 0;
-    for (const auto& a : appliances)
+    for (const auto &a : appliances) {
         total += a.calculateEnergy();
+    }
     return total;
 }
 
@@ -102,44 +128,76 @@ void viewAppliances() {
     cout << left << setw(20) << "Name"
          << setw(15) << "Power(W)"
          << setw(15) << "Hours"
-         << setw(15) << "Energy(kWh)\n";
+         << setw(15) << "Energy(kWh)" << endl;
 
-    for (const auto& a : appliances)
+    for (const auto &a : appliances) {
         a.displayAppliance();
+    }
+}
+
+void searchAppliance() {
+    cin.ignore();
+    string searchName;
+
+    cout << "Enter appliance name to search: ";
+    getline(cin, searchName);
+
+    for (const auto &a : appliances) {
+        if (a.getName() == searchName) {
+            cout << "\nAppliance Found:\n";
+            a.displayAppliance();
+            return;
+        }
+    }
+
+    cout << "Appliance not found.\n";
 }
 
 void menu() {
     int choice;
 
     do {
-        cout << "\nElectrical Load Monitoring\n";
+        cout << "\n=====================================\n";
+        cout << "        Electrical Load Monitoring\n";
+        cout << "=====================================\n";
+
         cout << "1. Register appliance\n";
-        cout << "2. View appliances\n";
-        cout << "3. Energy summary\n";
+        cout << "2. View all appliances\n";
+        cout << "3. Search appliance by name\n";
+        cout << "4. Energy summary (kWh/day)\n";
         cout << "0. Exit\n";
-        cout << "Choose: ";
+
+        cout << "\nChoose: ";
         cin >> choice;
 
         switch (choice) {
-            case 1: registerAppliance(); break;
-            case 2: viewAppliances(); break;
+            case 1:
+                registerAppliance();
+                break;
+            case 2:
+                viewAppliances();
+                break;
             case 3:
-                cout << "Total Energy: "
+                searchAppliance();
+                break;
+            case 4:
+                cout << "\nTotal Energy Consumption: "
                      << calculateTotalEnergy()
                      << " kWh/day\n";
                 break;
             case 0:
                 saveToFile();
-                cout << "Data saved. Exiting...\n";
+                cout << "Data saved. Exiting program...\n";
                 break;
             default:
-                cout << "Invalid choice.\n";
+                cout << "Invalid choice. Try again.\n";
         }
 
     } while (choice != 0);
 }
 
 int main() {
+    loadFromFile(); 
     menu();
     return 0;
 }
