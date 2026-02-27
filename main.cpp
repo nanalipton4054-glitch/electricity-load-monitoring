@@ -1,12 +1,13 @@
 #include <iostream>
 #include <iomanip>
+#include <vector>
 using namespace std;
 
 class Appliance {
 private:
     string name;
-    double powerRating;   // Watts
-    double hoursPerDay;   // Hours
+    double powerRating;
+    double hoursPerDay;
 
 public:
     Appliance() {
@@ -48,18 +49,47 @@ public:
     }
 
     void displayAppliance() const {
-        cout << "\nAppliance Details\n";
-        cout << "Name: " << name << endl;
-        cout << "Power: " << powerRating << " W\n";
-        cout << "Hours per day: " << hoursPerDay << endl;
-        cout << "Energy consumption: " 
-             << calculateEnergy() << " kWh/day\n";
+        cout << left << setw(20) << name
+             << setw(15) << powerRating
+             << setw(15) << hoursPerDay
+             << setw(15) << calculateEnergy() << endl;
     }
 };
 
+double calculateTotalEnergy(const vector<Appliance>& appliances) {
+    double total = 0;
+    for (const auto& a : appliances) {
+        total += a.calculateEnergy();
+    }
+    return total;
+}
+
 int main() {
-    Appliance a;
-    a.inputAppliance();
-    a.displayAppliance();
+    vector<Appliance> appliances;
+    int count;
+
+    cout << "How many appliances do you want to register? ";
+    cin >> count;
+
+    for (int i = 0; i < count; i++) {
+        Appliance a;
+        a.inputAppliance();
+        appliances.push_back(a);
+    }
+
+    cout << "\nRegistered Appliances\n";
+    cout << left << setw(20) << "Name"
+         << setw(15) << "Power(W)"
+         << setw(15) << "Hours"
+         << setw(15) << "Energy(kWh)\n";
+
+    for (const auto& a : appliances) {
+        a.displayAppliance();
+    }
+
+    cout << "\nTotal Energy Consumption: "
+         << calculateTotalEnergy(appliances)
+         << " kWh/day\n";
+
     return 0;
 }
