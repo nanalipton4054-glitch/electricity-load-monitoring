@@ -4,6 +4,32 @@
 #include <fstream>
 using namespace std;
 
+double getValidatedDouble(string message, double min, double max) {
+    double value;
+
+    while (true) {
+        cout << message;
+        cin >> value;
+
+        if (cin.fail()) {
+            cin.clear();
+            cin.ignore(1000, '\n');
+            cout << "Invalid input. Enter a numeric value.\n";
+            continue;
+        }
+
+        if (value < min || value > max) {
+            cout << "Value must be between "
+                 << min << " and " << max << endl;
+            continue;
+        }
+
+        break;
+    }
+
+    return value;
+}
+
 class Appliance {
 private:
     string name;
@@ -28,19 +54,11 @@ public:
             getline(cin, name);
         }
 
-        cout << "Enter power rating (Watts): ";
-        cin >> powerRating;
-        while (powerRating <= 0) {
-            cout << "Power rating must be greater than 0: ";
-            cin >> powerRating;
-        }
+        powerRating = getValidatedDouble(
+            "Enter power rating (Watts): ", 0.1, 100000);
 
-        cout << "Enter usage hours per day (0-24): ";
-        cin >> hoursPerDay;
-        while (hoursPerDay < 0 || hoursPerDay > 24) {
-            cout << "Hours must be between 0 and 24: ";
-            cin >> hoursPerDay;
-        }
+        hoursPerDay = getValidatedDouble(
+            "Enter usage hours per day (0-24): ", 0, 24);
     }
 
     double calculateEnergy() const {
@@ -113,14 +131,8 @@ void calculateBilling() {
         return;
     }
 
-    double tariff;
-    cout << "Enter electricity tariff per kWh: ";
-    cin >> tariff;
-
-    while (tariff <= 0) {
-        cout << "Tariff must be positive. Enter again: ";
-        cin >> tariff;
-    }
+    double tariff = getValidatedDouble(
+        "Enter electricity tariff per kWh: ", 0.01, 100);
 
     double totalEnergy = calculateTotalEnergy();
     double totalCost = totalEnergy * tariff;
@@ -176,6 +188,13 @@ void menu() {
         cout << "Choose: ";
 
         cin >> choice;
+
+        if (cin.fail()) {
+            cin.clear();
+            cin.ignore(1000, '\n');
+            cout << "Invalid menu choice.\n";
+            continue;
+        }
 
         switch (choice) {
             case 1: registerAppliance(); break;
